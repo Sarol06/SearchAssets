@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cari Barang dari Spreadsheet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cari Barang</h1>
+    <input type="text" id="searchInput" placeholder="Cari barang..." onkeyup="searchTable()">
+    
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Barang</th>
+                <th>Quantity Saat Ini</th>
+                <th>Tempat</th>
+                <th>Sub</th>
+                <th>Box</th>
+                <th>Tanggal Terupdate</th>
+                <th>User Terakhir</th>
+                <th>Status Terakhir</th>
+                <th>Keperluan</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Data dari Google Spreadsheet akan ditambahkan di sini -->
+        </tbody>
+    </table>
+
+    <script>
+        const SPREADSHEET_ID = '1LpTKtKDL0P2v3xuT8gT0AJrqAmXFRclr2aWqEAh3ld4';
+        const RANGE = 'Sheet1!A2:I133'; // Ganti sesuai rentang data di spreadsheet
+        
+        // Fungsi untuk mengambil data dari Google Sheets API
+        function loadSpreadsheetData() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/1LpTKtKDL0P2v3xuT8gT0AJrqAmXFRclr2aWqEAh3ld4/values/Sheet1!A2:I133?key=AIzaSyDv3N-kPmj85lUnwFQkD5j5mjNgJHqPcos`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const rows = data.values;
+                    let tableBody = document.getElementById('tableBody');
+                    
+                    rows.forEach((row, index) => {
+                        let tr = document.createElement('tr');
+                        row.forEach(col => {
+                            let td = document.createElement('td');
+                            td.innerText = col;
+                            tr.appendChild(td);
+                        });
+                        tableBody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Fungsi untuk mencari dan memfilter data pada tabel
+        function searchTable() {
+            let input = document.getElementById('searchInput');
+            let filter = input.value.toLowerCase();
+            let table = document.getElementById('dataTable');
+            let tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                let td = tr[i].getElementsByTagName('td');
+                let found = false;
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        let txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                tr[i].style.display = found ? "" : "none";
+            }
+        }
+
+        // Panggil fungsi untuk load data ketika halaman dimuat
+        window.onload = loadSpreadsheetData;
+    </script>
+
+</body>
+</html>
